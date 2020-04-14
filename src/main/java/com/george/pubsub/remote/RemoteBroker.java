@@ -2,6 +2,7 @@ package com.george.pubsub.remote;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.george.http.HttpBuilder;
 import com.george.http.HttpRequest;
 import com.george.http.HttpResponse;
 import pubsub.broker.Brokerable;
@@ -51,8 +52,23 @@ public class RemoteBroker {
                         String line = bufferedReader.readLine();
                         System.out.println(line);
                         String type = line.split(" ")[1].substring(1);
-                        while(!bufferedReader.readLine().isEmpty());
+                        int len = 0;
                         line = bufferedReader.readLine();
+                        while(!line.isEmpty()) {
+                            System.out.println(line);
+                            if (line.startsWith("Content-Length")) {
+                                String[] tokens = line.split(":");
+                                System.out.println(tokens[0]);
+                                System.out.println(tokens[1]);
+                                System.out.println(len = Integer.parseInt(tokens[1].trim()));
+                            }
+                            line = bufferedReader.readLine();
+                        }
+                        if (len > 0) {
+                            char[] buf = new char[len];
+                            System.out.println(bufferedReader.read(buf,0, len));
+                            line = String.copyValueOf(buf);
+                        }
                         if (type.equals("publish")) {
                             Message message = mapper.readValue(line, Message.class);
                             System.out.println(message);
@@ -69,7 +85,6 @@ public class RemoteBroker {
                             System.out.println(remoteSubscription);
                             clientSocket.getOutputStream().write("HTTP/1.1 200 OK\n\n".getBytes("UTF-8"));
                         } else if (type.equals("update")) {
-                            line = bufferedReader.readLine();
                             remoteBrokers = mapper.readValue(line, new TypeReference<Set<RemoteAddress>>(){});
                             System.out.println("updated remote broker list");
                             System.out.println(remoteBrokers);
@@ -130,46 +145,29 @@ public class RemoteBroker {
         if (remoteSubscribers.containsKey(topic)) {
             for (RemoteAddress remoteSubscriber : remoteSubscribers.get(topic)) {
                 try {
-                    Socket client = new Socket();
-                    client.connect(new InetSocketAddress(remoteSubscriber.getIp(), remoteSubscriber.getPort()));
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(client.getOutputStream());
-                    BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-                    bufferedWriter.write("GET /publish HTTP/1.1\n\n");
                     Message message = new Message(topic, text);
-                    bufferedWriter.write(mapper.writeValueAsString(message) + "\n");
-                   // bufferedWriter.write("{ \"topic\" : \"" + topic + "\", \"text\" : \"" +  text + "\" }\n");
-                    bufferedWriter.flush();
-                    client.close();
+                    HttpResponse response = HttpBuilder.get(remoteSubscriber.getIp(), remoteSubscriber.getPort(), "publish")
+                            .body(mapper.writeValueAsString(message)).send();
+                    System.out.println(response);
                 } catch (IOException e) {
                     System.out.println("could not connect to the broker server...");
                     System.out.println("reason: " + e.getMessage());
                 }
             }
         }
-
     }
 
     public boolean subscribe(String topic) {
         for (RemoteAddress remoteBroker : remoteBrokers) {
             if (!remotePublishers.containsKey(topic) || !remotePublishers.get(topic).contains(remoteBroker)) {
                 try {
-                    Socket client = new Socket();
-                    System.out.println(remoteBroker.getIp() + " " + remoteBroker.getPort());
-                    client.connect(new InetSocketAddress(remoteBroker.getIp(), remoteBroker.getPort()));
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(client.getOutputStream());
-                    BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-                    bufferedWriter.write("GET /subscribe HTTP/1.1\n\n");
                     RemoteSubscription remoteSubscription = new RemoteSubscription();
                     remoteSubscription.setTopic(topic);
                     remoteSubscription.setRemoteSubscriber(new RemoteAddress(ip, port));
-                    bufferedWriter.write(mapper.writeValueAsString(remoteSubscription) + "\n");
-                    //bufferedWriter.write("{\"topic\": \"" + topic + "\", \"remoteSubscriber\": {\"ip\": \"" + ip + "\", \"port\": " + port + "}}\n");
-                    bufferedWriter.flush();
-                    InputStreamReader inputStreamReader = new InputStreamReader(client.getInputStream());
-                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                    String line = bufferedReader.readLine();
-                    client.close();
-                    if (line.split(" ")[1].equals("200")) {
+                    HttpResponse response = HttpBuilder.get(remoteBroker.getIp(), remoteBroker.getPort(), "subscribe")
+                            .body(mapper.writeValueAsString(remoteSubscription)).send();
+
+                    if (response.getResponseCode() == 200) {
                         if (!remotePublishers.containsKey(topic)) {
                             remotePublishers.put(topic, new HashSet<>());
                         }
