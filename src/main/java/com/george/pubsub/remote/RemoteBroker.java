@@ -7,6 +7,7 @@ import com.george.http.HttpRequest;
 import com.george.http.HttpResponse;
 import pubsub.broker.Brokerable;
 import pubsub.broker.Message;
+import pubsub.broker.Receivable;
 
 import java.io.*;
 import java.net.*;
@@ -19,13 +20,10 @@ public class RemoteBroker {
 
     private String ip;
     private int port;
-    private Brokerable broker;
     private ServerSocket serverSocket;
     private ExecutorService executor;
     private ObjectMapper mapper;
-    private Set<RemoteAddress> remoteBrokers;
     private Map<String, Set<RemoteAddress>> remoteSubscribers;
-    private Map<String, Set<RemoteAddress>> remotePublishers;
 
     public RemoteBroker(int port) throws IOException {
         this("localhost", port);
@@ -35,9 +33,7 @@ public class RemoteBroker {
         this.ip = ip;
         this.port = port;
         mapper = new ObjectMapper();
-        remoteBrokers = new HashSet<>();
         remoteSubscribers = new HashMap<>();
-        remotePublishers = new HashMap<>();
         serverSocket = new ServerSocket(port, 50, InetAddress.getByName(ip));
         System.out.println("started remote broker... listening on ip=" + serverSocket.getInetAddress() + " port=" + serverSocket.getLocalPort());
         executor = Executors.newSingleThreadExecutor();
@@ -72,8 +68,12 @@ public class RemoteBroker {
                         if (type.equals("publish")) {
                             Message message = mapper.readValue(line, Message.class);
                             System.out.println(message);
-                            if (broker != null) {
-                                broker.publish(message.getTopic(), message.getText());
+                            if (remoteSubscribers.containsKey(message.getTopic())) {
+                                for (RemoteAddress remoteSubscriber : remoteSubscribers.get(message.getTopic())) {
+                                    System.out.println(remoteSubscriber);
+                                    HttpBuilder.get(remoteSubscriber.getIp(), remoteSubscriber.getPort(), "receive")
+                                            .body(mapper.writeValueAsString(message)).send();
+                                }
                             }
                             clientSocket.getOutputStream().write("HTTP/1.1 200 OK\n\n".getBytes("UTF-8"));
                         } else if (type.equals("subscribe")) {
@@ -84,103 +84,16 @@ public class RemoteBroker {
                             remoteSubscribers.get(remoteSubscription.getTopic()).add(remoteSubscription.getRemoteSubscriber());
                             System.out.println(remoteSubscription);
                             clientSocket.getOutputStream().write("HTTP/1.1 200 OK\n\n".getBytes("UTF-8"));
-                        } else if (type.equals("update")) {
-                            remoteBrokers = mapper.readValue(line, new TypeReference<Set<RemoteAddress>>(){});
-                            System.out.println("updated remote broker list");
-                            System.out.println(remoteBrokers);
-                            clientSocket.getOutputStream().write("HTTP/1.1 200 OK\n\n".getBytes("UTF-8"));
                         } else {
                             clientSocket.getOutputStream().write("HTTP/1.1 404 Not Found\n\n".getBytes("UTF-8"));
                         }
                         clientSocket.close();
                     }
                 } catch (IOException e) {
-                    System.out.println(e.getMessage());
+                    e.printStackTrace();
                 }
             }
         });
-    }
-
-    public Brokerable getBroker() {
-        return broker;
-    }
-
-    public void setBroker(Brokerable broker) {
-        this.broker = broker;
-    }
-
-    public boolean register(String thirorosIp, int thirorosPort) throws IOException {
-        System.out.println("connecting to thiroros...ip=" + thirorosIp + " port=" + thirorosPort);
-        HttpRequest http = new HttpRequest(thirorosIp, thirorosPort);
-        RemoteAddress remoteAddress = new RemoteAddress(ip, port);
-        String str = mapper.writeValueAsString(remoteAddress);
-        http.setContent(str);
-        HttpResponse response = http.get("register");
-        if (response.getResponseCode() == 200) {
-            System.out.println(response.getResponseBody());
-            remoteBrokers = mapper.readValue(response.getResponseBody(), new TypeReference<Set<RemoteAddress>>(){});
-            System.out.println("registered successfully with thiroros");
-            System.out.println("remote brokers: " + remoteBrokers);
-            return true;
-        } else {
-            System.out.println("failed to register with thiroros");
-            return false;
-        }
-    }
-
-    public boolean unregister(String thirorosIp, int thirorosPort) throws IOException {
-        System.out.println("connecting to thiroros...ip=" + thirorosIp + " port=" + thirorosPort);
-        HttpRequest http = new HttpRequest(thirorosIp, thirorosPort);
-        HttpResponse response = http.get("unregister");
-        if (response.getResponseCode() == 200) {
-            System.out.println("unregistered successfully with thiroros");
-            return true;
-        } else {
-            System.out.println("failed to unregister from thiroros");
-            return false;
-        }
-    }
-
-    public void publish(String topic, String text) {
-        if (remoteSubscribers.containsKey(topic)) {
-            for (RemoteAddress remoteSubscriber : remoteSubscribers.get(topic)) {
-                try {
-                    Message message = new Message(topic, text);
-                    HttpResponse response = HttpBuilder.get(remoteSubscriber.getIp(), remoteSubscriber.getPort(), "publish")
-                            .body(mapper.writeValueAsString(message)).send();
-                    System.out.println(response);
-                } catch (IOException e) {
-                    System.out.println("could not connect to the broker server...");
-                    System.out.println("reason: " + e.getMessage());
-                }
-            }
-        }
-    }
-
-    public boolean subscribe(String topic) {
-        for (RemoteAddress remoteBroker : remoteBrokers) {
-            if (!remotePublishers.containsKey(topic) || !remotePublishers.get(topic).contains(remoteBroker)) {
-                try {
-                    RemoteSubscription remoteSubscription = new RemoteSubscription();
-                    remoteSubscription.setTopic(topic);
-                    remoteSubscription.setRemoteSubscriber(new RemoteAddress(ip, port));
-                    HttpResponse response = HttpBuilder.get(remoteBroker.getIp(), remoteBroker.getPort(), "subscribe")
-                            .body(mapper.writeValueAsString(remoteSubscription)).send();
-
-                    if (response.getResponseCode() == 200) {
-                        if (!remotePublishers.containsKey(topic)) {
-                            remotePublishers.put(topic, new HashSet<>());
-                        }
-                        remotePublishers.get(topic).add(remoteBroker);
-                        return true;
-                    }
-                } catch (IOException e) {
-                    System.out.println("could not connect to remote broker...");
-                    System.out.println("reason: " + e.getMessage());
-                }
-            }
-        }
-        return false;
     }
 
     public void shutdown() throws IOException {

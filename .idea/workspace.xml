@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="aa720323-8b17-48c2-9c57-78b2ca129f2f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/george/pubsub/remote/RemoteBroker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/george/pubsub/remote/RemoteBroker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/launcher/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/launcher/Main.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +35,7 @@
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
     <property name="project.structure.side.proportion" value="0.0" />
+    <property name="settings.editor.selected.configurable" value="reference.projectsettings.compiler.javacompiler" />
   </component>
   <component name="RunAnythingCache">
     <option name="myCommands">
@@ -134,22 +135,26 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="381" y="0" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.0.1536.824@0.0.1536.824" timestamp="1586086119486" />
-    <state width="1493" height="210" key="GridCell.Tab.0.bottom" timestamp="1586883507972">
+    <state width="1493" height="210" key="GridCell.Tab.0.bottom" timestamp="1587204058413">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1586883507972" />
-    <state width="1493" height="210" key="GridCell.Tab.0.center" timestamp="1586883507972">
+    <state width="1493" height="210" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1587204058413" />
+    <state width="1493" height="210" key="GridCell.Tab.0.center" timestamp="1587204058413">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1586883507972" />
-    <state width="1493" height="210" key="GridCell.Tab.0.left" timestamp="1586883507972">
+    <state width="1493" height="210" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1587204058413" />
+    <state width="1493" height="210" key="GridCell.Tab.0.left" timestamp="1587204058413">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1586883507972" />
-    <state width="1493" height="210" key="GridCell.Tab.0.right" timestamp="1586883507972">
+    <state width="1493" height="210" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1587204058413" />
+    <state width="1493" height="210" key="GridCell.Tab.0.right" timestamp="1587204058413">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1586883507972" />
+    <state width="1493" height="210" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1587204058413" />
+    <state x="279" y="58" key="SettingsEditor" timestamp="1587144199284">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="279" y="58" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1587144199284" />
     <state x="413" y="30" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1586882219155">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -158,10 +163,10 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="209" y="117" key="new project wizard/0.0.1536.824@0.0.1536.824" timestamp="1586459727359" />
-    <state x="425" y="187" width="672" height="677" key="run.anything.popup" timestamp="1586110570046">
+    <state x="425" y="187" width="672" height="677" key="run.anything.popup" timestamp="1587144902543">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="425" y="187" width="672" height="677" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1586110570046" />
+    <state x="425" y="187" width="672" height="677" key="run.anything.popup/0.0.1536.824@0.0.1536.824" timestamp="1587144902543" />
     <state x="431" y="145" width="672" height="678" key="search.everywhere.popup" timestamp="1586195407032">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
