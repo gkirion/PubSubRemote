@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.george.http.HttpBuilder;
 import com.george.http.HttpRequest;
 import com.george.http.HttpResponse;
+import pubsub.broker.Broker;
 import pubsub.broker.Brokerable;
 import pubsub.broker.Message;
 import pubsub.broker.Receivable;
@@ -23,7 +24,7 @@ public class RemoteBroker {
     private ServerSocket serverSocket;
     private ExecutorService executor;
     private ObjectMapper mapper;
-    private Map<String, Set<RemoteAddress>> remoteSubscribers;
+    private Broker broker;
 
     public RemoteBroker(int port) throws IOException {
         this("localhost", port);
@@ -33,7 +34,7 @@ public class RemoteBroker {
         this.ip = ip;
         this.port = port;
         mapper = new ObjectMapper();
-        remoteSubscribers = new HashMap<>();
+        broker = new Broker();
         serverSocket = new ServerSocket(port, 50, InetAddress.getByName(ip));
         System.out.println("started remote broker... listening on ip=" + serverSocket.getInetAddress() + " port=" + serverSocket.getLocalPort());
         executor = Executors.newSingleThreadExecutor();
@@ -67,20 +68,13 @@ public class RemoteBroker {
                         if (type.equals("publish")) {
                             Message message = mapper.readValue(line, Message.class);
                             System.out.println(message);
-                            if (remoteSubscribers.containsKey(message.getTopic())) {
-                                for (RemoteAddress remoteSubscriber : remoteSubscribers.get(message.getTopic())) {
-                                    System.out.println(remoteSubscriber);
-                                    HttpBuilder.get(remoteSubscriber.getIp(), remoteSubscriber.getPort(), "receive")
-                                            .body(mapper.writeValueAsString(message)).send();
-                                }
-                            }
+                            broker.publish(message);
                             clientSocket.getOutputStream().write("HTTP/1.1 200 OK\n\n".getBytes("UTF-8"));
                         } else if (type.equals("subscribe")) {
                             RemoteSubscription remoteSubscription = mapper.readValue(line, RemoteSubscription.class);
-                            if (!remoteSubscribers.containsKey(remoteSubscription.getTopic())) {
-                                remoteSubscribers.put(remoteSubscription.getTopic(), new HashSet<>());
-                            }
-                            remoteSubscribers.get(remoteSubscription.getTopic()).add(remoteSubscription.getRemoteSubscriber());
+                            RemoteSubscriber remoteSubscriber = new RemoteSubscriber(remoteSubscription.getRemoteSubscriber());
+                            remoteSubscriber.setMapper(mapper);
+                            broker.subscribe(remoteSubscription.getTopic(), remoteSubscriber);
                             System.out.println(remoteSubscription);
                             clientSocket.getOutputStream().write("HTTP/1.1 200 OK\n\n".getBytes("UTF-8"));
                         } else {
@@ -97,5 +91,6 @@ public class RemoteBroker {
     public void shutdown() throws IOException {
         serverSocket.close();
         executor.shutdown();
+        broker.shutdown();
     }
 }
