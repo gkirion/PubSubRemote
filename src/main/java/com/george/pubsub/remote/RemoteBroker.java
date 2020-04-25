@@ -40,9 +40,8 @@ public class RemoteBroker {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                try {
-                    while (true) {
-                        Socket clientSocket = serverSocket.accept();
+                while (true) {
+                    try (Socket clientSocket = serverSocket.accept()) {
                         InputStreamReader inputStreamReader = new InputStreamReader(clientSocket.getInputStream());
                         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                         String line = bufferedReader.readLine();
@@ -50,7 +49,7 @@ public class RemoteBroker {
                         String type = line.split(" ")[1].substring(1);
                         int len = 0;
                         line = bufferedReader.readLine();
-                        while(!line.isEmpty()) {
+                        while (!line.isEmpty()) {
                             System.out.println(line);
                             if (line.startsWith("Content-Length")) {
                                 String[] tokens = line.split(":");
@@ -87,10 +86,9 @@ public class RemoteBroker {
                         } else {
                             clientSocket.getOutputStream().write("HTTP/1.1 404 Not Found\n\n".getBytes("UTF-8"));
                         }
-                        clientSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             }
         });
