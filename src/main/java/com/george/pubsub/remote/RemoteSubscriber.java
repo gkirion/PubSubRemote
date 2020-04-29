@@ -6,6 +6,7 @@ import pubsub.broker.Message;
 import pubsub.broker.Receivable;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class RemoteSubscriber implements Receivable {
 
@@ -33,6 +34,19 @@ public class RemoteSubscriber implements Receivable {
 
     public void setMapper(ObjectMapper mapper) {
         this.mapper = mapper;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RemoteSubscriber that = (RemoteSubscriber) o;
+        return Objects.equals(remoteAddress, that.remoteAddress);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(remoteAddress);
     }
 
     @Override
