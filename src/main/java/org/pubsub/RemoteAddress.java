@@ -1,4 +1,4 @@
-package com.george.pubsub.remote;
+package org.pubsub;
 
 import java.util.Objects;
 
