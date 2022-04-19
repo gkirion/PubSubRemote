@@ -1,4 +1,6 @@
-package org.pubsub.model;
+package org.pubsub.server.subscription;
+
+import org.pubsub.server.subscriber.RemoteSubscriber;
 
 public class Subscription {
 

@@ -1,12 +1,9 @@
-package org.pubsub.model;
-
-import org.springframework.web.client.RestTemplate;
+package org.pubsub.server.subscriber;
 
 public class RemoteSubscriberBuilder {
 
     private String address;
     private int port;
-    private RestTemplate restTemplate;
 
     public RemoteSubscriberBuilder() {
 
@@ -22,13 +19,8 @@ public class RemoteSubscriberBuilder {
         return this;
     }
 
-    public RemoteSubscriberBuilder restTemplate(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        return this;
-    }
-
     public RemoteSubscriber build() {
-        return new RemoteSubscriber(address, port, restTemplate);
+        return new RemoteSubscriber(address, port);
     }
 
 }

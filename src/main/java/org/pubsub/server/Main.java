@@ -1,6 +1,6 @@
-package org.pubsub;
+package org.pubsub.server;
 
-import org.pubsub.broker.MessageBroker;
+import org.pubsub.core.broker.service.MessageBroker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;

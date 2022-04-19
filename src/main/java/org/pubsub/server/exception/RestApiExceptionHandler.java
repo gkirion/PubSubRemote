@@ -1,4 +1,4 @@
-package org.pubsub.exception;
+package org.pubsub.server.exception;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

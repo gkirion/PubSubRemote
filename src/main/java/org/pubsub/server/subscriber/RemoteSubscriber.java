@@ -1,7 +1,7 @@
-package org.pubsub.model;
+package org.pubsub.server.subscriber;
 
-import org.pubsub.broker.Message;
-import org.pubsub.broker.Subscriber;
+import org.pubsub.core.message.Message;
+import org.pubsub.core.subscriber.Subscriber;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.web.client.RestTemplate;
@@ -13,16 +13,15 @@ public class RemoteSubscriber implements Subscriber {
 
     private String address;
     private int port;
-    private RestTemplate restTemplate;
+    private RestTemplate restTemplate = new RestTemplate();
 
     public RemoteSubscriber() {
 
     }
 
-    public RemoteSubscriber(String address, int port, RestTemplate restTemplate) {
+    public RemoteSubscriber(String address, int port) {
         this.address = address;
         this.port = port;
-        this.restTemplate = restTemplate;
     }
 
     public String getAddress() {
@@ -39,14 +38,6 @@ public class RemoteSubscriber implements Subscriber {
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public RestTemplate getRestTemplate() {
-        return restTemplate;
-    }
-
-    public void setRestTemplate(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
     }
 
     @Override
